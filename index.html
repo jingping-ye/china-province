@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"
+    >
+    <title>中国省份记忆挑战</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e6f5c, #289672);
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, sans-serif;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app-card {
+            max-width: 550px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 48px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            background: #e0ece9;
+            border-radius: 60px;
+            padding: 6px;
+            margin-bottom: 20px;
+        }
+
+        .mode-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            background: transparent;
+            border: none;
+            color: #1e6f5c;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .mode-tab.active {
+            background: #1e6f5c;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .image-container {
+            background: #fef9e8;
+            border-radius: 32px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 0 2px white, 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .province-img {
+            max-width: 100%;
+            max-height: 240px;
+            width: auto;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 28px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .province-name {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1e6f5c;
+            margin: 5px 0;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: #e0ece9;
+            padding: 10px 16px;
+            border-radius: 40px;
+            margin-bottom: 16px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .option-btn {
+            background: #f2f2f2;
+            border: none;
+            padding: 14px 0;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e6f5c;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .option-btn:active {
+            transform: scale(0.97);
+            background: #d9e3df;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .nav-btn,
+        .action-btn {
+            background: #1e6f5c;
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .action-btn {
+            background: #f4a261;
+        }
+
+        .reset-btn {
+            background: #e76f51;
+        }
+
+        .feedback {
+            text-align: center;
+            margin-top: 12px;
+            font-weight: bold;
+            color: #e76f51;
+        }
+
+        .timer {
+            font-size: 1.4rem;
+            font-family: monospace;
+            background: #2c3e50;
+            color: #f4d03f;
+            padding: 4px 12px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+
+        @media (max-width: 500px) {
+            .province-img {
+                max-height: 180px;
+            }
+
+            .province-name {
+                font-size: 1.6rem;
+            }
+
+            .option-btn {
+                padding: 12px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div
+        class="app-card"
+        id="app"
+    >
+        <div class="mode-tabs">
+            <button
+                class="mode-tab"
+                data-mode="memorize"
+            >📖 记忆</button>
+            <button
+                class="mode-tab"
+                data-mode="entertain"
+            >🎮 娱乐</button>
+            <button
+                class="mode-tab"
+                data-mode="arena"
+            >⚡ 竞技</button>
+        </div>
+
+        <div class="image-container">
+            <img
+                id="provinceImg"
+                class="province-img"
+                alt="省份轮廓"
+            >
+        </div>
+
+        <div
+            class="info-panel"
+            id="infoPanel"
+        >
+            <div
+                id="provinceName"
+                class="province-name"
+            >---</div>
+            <div
+                id="extraInfo"
+                style="font-size:0.9rem; color:gray;"
+            ></div>
+        </div>
+
+        <div id="dynamicArea"></div>
+        <div
+            id="feedbackMsg"
+            class="feedback"
+        ></div>
+    </div>
+
+    <script>
+        // ---------- 拼音省份列表（与 images 文件夹中的 SVG 文件名一致）----------
+        const PROVINCES_PINYIN = [
+            "beijing", "tianjin", "shanghai", "chongqing", "hebei", "shanxi", "liaoning", "jilin", "heilongjiang",
+            "jiangsu", "zhejiang", "anhui", "fujian", "jiangxi", "shandong", "henan", "hubei", "hunan",
+            "guangdong", "hainan", "sichuan", "guizhou", "yunnan", "shaanxi", "gansu", "qinghai", "taiwan",
+            "neimenggu", "guangxi", "xizang", "ningxia", "xinjiang", "xianggang", "aomen"
+        ];
+
+        // 拼音 -> 中文名称映射
+        const NAME_MAP = {
+            "beijing": "北京市", "tianjin": "天津市", "shanghai": "上海市", "chongqing": "重庆市",
+            "hebei": "河北省", "shanxi": "山西省", "liaoning": "辽宁省", "jilin": "吉林省", "heilongjiang": "黑龙江省",
+            "jiangsu": "江苏省", "zhejiang": "浙江省", "anhui": "安徽省", "fujian": "福建省", "jiangxi": "江西省",
+            "shandong": "山东省", "henan": "河南省", "hubei": "湖北省", "hunan": "湖南省",
+            "guangdong": "广东省", "hainan": "海南省", "sichuan": "四川省", "guizhou": "贵州省", "yunnan": "云南省",
+            "shaanxi": "陕西省", "gansu": "甘肃省", "qinghai": "青海省", "taiwan": "台湾省",
+            "neimenggu": "内蒙古自治区", "guangxi": "广西壮族自治区", "xizang": "西藏自治区",
+            "ningxia": "宁夏回族自治区", "xinjiang": "新疆维吾尔自治区",
+            "xianggang": "香港特别行政区", "aomen": "澳门特别行政区"
+        };
+
+        // 辅助：根据拼音获取中文名
+        function getChineseName(pinyin) {
+            return NAME_MAP[pinyin] || pinyin;
+        }
+
+        // 图片路径配置
+        const IMG_BASE = "images/";
+        const IMG_EXT = ".svg";
+
+        // 全局状态
+        let currentMode = "memorize";
+        let currentProvinceIndex = 0;          // 索引基于 PROVINCES_PINYIN
+        let entertainScore = 0;
+        let entertainTotal = 0;
+        let arenaActive = false;
+        let arenaQuestions = [];                 // 存放题目 { correctPinyin, optionsPinyin[] }
+        let arenaCurrentIndex = 0;
+        let arenaScore = 0;
+        let arenaStartTime = 0;
+        let arenaTimerInterval = null;
+        let bestArenaScore = localStorage.getItem("bestArenaScore") ? JSON.parse(localStorage.getItem("bestArenaScore")) : { score: 0, time: 0 };
+        let currentMemorizeOrder = [];
+        let memorizeRandom = false;
+
+        // 娱乐模式专用
+        let entertainCurrentCorrectPinyin = null;
+
+        // DOM 元素
+        const imgEl = document.getElementById("provinceImg");
+        const provinceNameEl = document.getElementById("provinceName");
+        const extraInfoEl = document.getElementById("extraInfo");
+        const dynamicArea = document.getElementById("dynamicArea");
+        const feedbackMsg = document.getElementById("feedbackMsg");
+
+        // 加载图片（传入拼音）
+        function loadProvinceImage(pinyin) {
+            imgEl.src = `${IMG_BASE}${pinyin}${IMG_EXT}`;
+            imgEl.onerror = () => {
+                imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ccc'/%3E%3Ctext x='50' y='55' font-size='12' text-anchor='middle' fill='red'%3E图片缺失%3C/text%3E%3C/svg%3E";
+            };
+            provinceNameEl.innerText = getChineseName(pinyin);
+        }
+
+        // 随机打乱数组
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // 生成随机选项：返回选项拼音数组（包含正确拼音和三个不同错误拼音）
+        function generateOptions(correctPinyin, excludeIndex) {
+            let others = PROVINCES_PINYIN.filter((_, idx) => idx !== excludeIndex);
+            others = shuffleArray([...others]);
+            let opts = [correctPinyin];
+            for (let i = 0; i < 3 && i < others.length; i++) opts.push(others[i]);
+            return shuffleArray(opts);
+        }
+
+        // 刷新当前模式界面
+        function renderMode() {
+            if (currentMode === "memorize") {
+                renderMemorizeMode();
+            } else if (currentMode === "entertain") {
+                renderEntertainMode();
+            } else if (currentMode === "arena") {
+                renderArenaMode();
+            }
+        }
+
+        // ---------- 记忆模式 ----------
+        function renderMemorizeMode() {
+            clearArenaTimer();
+            arenaActive = false;
+            dynamicArea.innerHTML = `
+                <div class="nav-buttons">
+                    <button class="nav-btn" id="prevBtn">◀ 上一个</button>
+                    <button class="nav-btn" id="randomOrderBtn">🎲 随机顺序</button>
+                    <button class="nav-btn" id="nextBtn">下一个 ▶</button>
+                </div>
+                <div class="score-board" style="justify-content:center; gap:20px;">
+                    <span>📌 当前: ${getChineseName(PROVINCES_PINYIN[currentProvinceIndex])}</span>
+                </div>
+            `;
+            extraInfoEl.innerText = "👆 点击左右按钮浏览省份轮廓";
+            loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
+
+            document.getElementById("prevBtn")?.addEventListener("click", () => {
+                if (memorizeRandom && currentMemorizeOrder.length) {
+                    let idx = currentMemorizeOrder.indexOf(currentProvinceIndex);
+                    let prev = (idx - 1 + currentMemorizeOrder.length) % currentMemorizeOrder.length;
+                    currentProvinceIndex = currentMemorizeOrder[prev];
+                } else {
+                    currentProvinceIndex = (currentProvinceIndex - 1 + PROVINCES_PINYIN.length) % PROVINCES_PINYIN.length;
+                }
+                loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
+            });
+            document.getElementById("nextBtn")?.addEventListener("click", () => {
+                if (memorizeRandom && currentMemorizeOrder.length) {
+                    let idx = currentMemorizeOrder.indexOf(currentProvinceIndex);
+                    let next = (idx + 1) % currentMemorizeOrder.length;
+                    currentProvinceIndex = currentMemorizeOrder[next];
+                } else {
+                    currentProvinceIndex = (currentProvinceIndex + 1) % PROVINCES_PINYIN.length;
+                }
+                loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
+            });
+            document.getElementById("randomOrderBtn")?.addEventListener("click", () => {
+                memorizeRandom = true;
+                currentMemorizeOrder = shuffleArray([...Array(PROVINCES_PINYIN.length).keys()]);
+                currentProvinceIndex = currentMemorizeOrder[0];
+                loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
+                feedbackMsg.innerText = "已切换为随机顺序模式！";
+                setTimeout(() => feedbackMsg.innerText = "", 1500);
+            });
+        }
+
+        // ---------- 娱乐模式 ----------
+        function renderEntertainMode() {
+            clearArenaTimer();
+            arenaActive = false;
+            // 随机选题
+            const randIndex = Math.floor(Math.random() * PROVINCES_PINYIN.length);
+            const correctPinyin = PROVINCES_PINYIN[randIndex];
+            const optionsPinyin = generateOptions(correctPinyin, randIndex);
+            entertainCurrentCorrectPinyin = correctPinyin;
+            // 显示图片
+            imgEl.src = `${IMG_BASE}${correctPinyin}${IMG_EXT}`;
+            imgEl.onerror = () => { imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ccc'/%3E%3Ctext x='50' y='55' font-size='12' text-anchor='middle' fill='red'%3E图片缺失%3C/text%3E%3C/svg%3E"; };
+            provinceNameEl.innerText = "???";
+
+            let optsHtml = '';
+            optionsPinyin.forEach(optPinyin => {
+                optsHtml += `<button class="option-btn" data-opt="${optPinyin}">${getChineseName(optPinyin)}</button>`;
+            });
+            dynamicArea.innerHTML = `
+                <div class="score-board">
+                    <span>🏆 得分: ${entertainScore}</span>
+                    <span>📊 已答: ${entertainTotal}</span>
+                </div>
+                <div class="options-grid" id="optionsGrid">
+                    ${optsHtml}
+                </div>
+                <div class="nav-buttons">
+                    <button class="action-btn" id="nextEntertainBtn">下一题 ➡</button>
+                </div>
+            `;
+            // 绑定选项事件
+            document.querySelectorAll(".option-btn").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    if (arenaActive) return;
+                    const selectedPinyin = e.target.getAttribute("data-opt");
+                    if (selectedPinyin === entertainCurrentCorrectPinyin) {
+                        entertainScore++;
+                        entertainTotal++;
+                        feedbackMsg.innerText = "✅ 正确！ +1分";
+                        setTimeout(() => {
+                            feedbackMsg.innerText = "";
+                            nextEntertainQuestion();
+                        }, 800);
+                    } else {
+                        entertainTotal++;
+                        feedbackMsg.innerText = `❌ 错误！ 正确答案是 ${getChineseName(entertainCurrentCorrectPinyin)}`;
+                        setTimeout(() => {
+                            feedbackMsg.innerText = "";
+                            nextEntertainQuestion();
+                        }, 1500);
+                    }
+                    document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+                    setTimeout(() => {
+                        document.querySelectorAll(".option-btn").forEach(b => b.disabled = false);
+                    }, 1500);
+                });
+            });
+            document.getElementById("nextEntertainBtn")?.addEventListener("click", () => {
+                nextEntertainQuestion();
+            });
+            extraInfoEl.innerText = "🎯 点击正确选项，答对得分";
+        }
+
+        function nextEntertainQuestion() {
+            const randIndex = Math.floor(Math.random() * PROVINCES_PINYIN.length);
+            const correctPinyin = PROVINCES_PINYIN[randIndex];
+            const optionsPinyin = generateOptions(correctPinyin, randIndex);
+            entertainCurrentCorrectPinyin = correctPinyin;
+            imgEl.src = `${IMG_BASE}${correctPinyin}${IMG_EXT}`;
+            imgEl.onerror = () => { imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ccc'/%3E%3Ctext x='50' y='55' font-size='12' text-anchor='middle' fill='red'%3E图片缺失%3C/text%3E%3C/svg%3E"; };
+            provinceNameEl.innerText = "???";
+            let optsHtml = '';
+            optionsPinyin.forEach(optPinyin => {
+                optsHtml += `<button class="option-btn" data-opt="${optPinyin}">${getChineseName(optPinyin)}</button>`;
+            });
+            const grid = document.getElementById("optionsGrid");
+            if (grid) grid.innerHTML = optsHtml;
+            // 重新绑定
+            document.querySelectorAll(".option-btn").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    if (arenaActive) return;
+                    const selectedPinyin = e.target.getAttribute("data-opt");
+                    if (selectedPinyin === entertainCurrentCorrectPinyin) {
+                        entertainScore++;
+                        entertainTotal++;
+                        feedbackMsg.innerText = "✅ 正确！ +1分";
+                        setTimeout(() => {
+                            feedbackMsg.innerText = "";
+                            nextEntertainQuestion();
+                        }, 800);
+                    } else {
+                        entertainTotal++;
+                        feedbackMsg.innerText = `❌ 错误！ 正确答案是 ${getChineseName(entertainCurrentCorrectPinyin)}`;
+                        setTimeout(() => {
+                            feedbackMsg.innerText = "";
+                            nextEntertainQuestion();
+                        }, 1500);
+                    }
+                    document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+                    setTimeout(() => {
+                        document.querySelectorAll(".option-btn").forEach(b => b.disabled = false);
+                    }, 1500);
+                });
+            });
+            const scoreBoard = document.querySelector(".score-board");
+            if (scoreBoard) {
+                scoreBoard.innerHTML = `<span>🏆 得分: ${entertainScore}</span><span>📊 已答: ${entertainTotal}</span>`;
+            }
+        }
+
+        // ---------- 竞技模式 ----------
+        function startArena() {
+            if (arenaActive) return;
+            arenaQuestions = [];
+            for (let i = 0; i < 10; i++) {
+                const randIdx = Math.floor(Math.random() * PROVINCES_PINYIN.length);
+                const correctPinyin = PROVINCES_PINYIN[randIdx];
+                const optsPinyin = generateOptions(correctPinyin, randIdx);
+                arenaQuestions.push({ correctPinyin: correctPinyin, optionsPinyin: optsPinyin });
+            }
+            arenaCurrentIndex = 0;
+            arenaScore = 0;
+            arenaStartTime = Date.now();
+            arenaActive = true;
+            if (arenaTimerInterval) clearInterval(arenaTimerInterval);
+            arenaTimerInterval = setInterval(updateArenaTimer, 100);
+            renderArenaQuestion();
+        }
+
+        function updateArenaTimer() {
+            if (!arenaActive) return;
+            const elapsed = Math.floor((Date.now() - arenaStartTime) / 1000);
+            const timerSpan = document.getElementById("arenaTimer");
+            if (timerSpan) timerSpan.innerText = `${elapsed}s`;
+        }
+
+        function renderArenaQuestion() {
+            if (!arenaActive || arenaCurrentIndex >= arenaQuestions.length) {
+                endArenaGame();
+                return;
+            }
+            const q = arenaQuestions[arenaCurrentIndex];
+            imgEl.src = `${IMG_BASE}${q.correctPinyin}${IMG_EXT}`;
+            imgEl.onerror = () => { imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ccc'/%3E%3Ctext x='50' y='55' font-size='12' text-anchor='middle' fill='red'%3E图片缺失%3C/text%3E%3C/svg%3E"; };
+            provinceNameEl.innerText = "???";
+            let optsHtml = '';
+            q.optionsPinyin.forEach(optPinyin => {
+                optsHtml += `<button class="option-btn arena-opt" data-opt="${optPinyin}">${getChineseName(optPinyin)}</button>`;
+            });
+            dynamicArea.innerHTML = `
+                <div class="score-board">
+                    <span>⚡ 第 ${arenaCurrentIndex + 1} / 10 题</span>
+                    <span>🏅 得分: ${arenaScore}</span>
+                    <span>⏱️ <span id="arenaTimer">0</span> s</span>
+                </div>
+                <div class="options-grid" id="arenaOptions">
+                    ${optsHtml}
+                </div>
+            `;
+            document.querySelectorAll(".arena-opt").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    if (!arenaActive) return;
+                    const selectedPinyin = e.target.getAttribute("data-opt");
+                    if (selectedPinyin === q.correctPinyin) {
+                        arenaScore += 10;
+                        feedbackMsg.innerText = "🎉 +10分！";
+                        setTimeout(() => feedbackMsg.innerText = "", 500);
+                        arenaCurrentIndex++;
+                        renderArenaQuestion();
+                    } else {
+                        feedbackMsg.innerText = `❌ 错误！正确答案是 ${getChineseName(q.correctPinyin)}。游戏结束。`;
+                        endArenaGame();
+                    }
+                });
+            });
+            extraInfoEl.innerText = "⚡ 限时挑战，答错即结束！";
+        }
+
+        function endArenaGame() {
+            if (!arenaActive) return;
+            arenaActive = false;
+            clearInterval(arenaTimerInterval);
+            const elapsed = Math.floor((Date.now() - arenaStartTime) / 1000);
+            const finalScore = arenaScore;
+            let recordMsg = "";
+            if (finalScore > bestArenaScore.score || (finalScore === bestArenaScore.score && elapsed < bestArenaScore.time)) {
+                bestArenaScore = { score: finalScore, time: elapsed };
+                localStorage.setItem("bestArenaScore", JSON.stringify(bestArenaScore));
+                recordMsg = " 🎉 新纪录！";
+            }
+            dynamicArea.innerHTML = `
+                <div class="score-board">
+                    <span>🏁 最终得分: ${finalScore}</span>
+                    <span>⏱️ 用时: ${elapsed}秒</span>
+                </div>
+                <div class="nav-buttons">
+                    <button class="action-btn" id="restartArenaBtn">🔄 重新挑战</button>
+                </div>
+                <div>🏆 最佳: ${bestArenaScore.score}分 (${bestArenaScore.time}秒)${recordMsg}</div>
+            `;
+            document.getElementById("restartArenaBtn")?.addEventListener("click", () => {
+                startArena();
+            });
+            provinceNameEl.innerText = "挑战结束";
+            extraInfoEl.innerText = "点击重新挑战继续竞技";
+        }
+
+        function renderArenaMode() {
+            clearArenaTimer();
+            arenaActive = false;
+            dynamicArea.innerHTML = `
+                <div class="nav-buttons">
+                    <button class="action-btn" id="startArenaBtn">🏁 开始10题挑战</button>
+                </div>
+                <div>🏆 最佳记录: ${bestArenaScore.score}分 (${bestArenaScore.time}秒)</div>
+            `;
+            provinceNameEl.innerText = "竞技模式";
+            imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e0ece9'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%231e6f5c'%3E⚡点击开始%3C/text%3E%3C/svg%3E";
+            extraInfoEl.innerText = "限时10题，答错即结束，分数越高越好";
+            document.getElementById("startArenaBtn")?.addEventListener("click", startArena);
+        }
+
+        function clearArenaTimer() {
+            if (arenaTimerInterval) clearInterval(arenaTimerInterval);
+            arenaTimerInterval = null;
+            arenaActive = false;
+        }
+
+        // 模式切换
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll(".mode-tab").forEach(tab => {
+                if (tab.getAttribute("data-mode") === mode) tab.classList.add("active");
+                else tab.classList.remove("active");
+            });
+            if (mode === "memorize") {
+                entertainScore = 0;
+                entertainTotal = 0;
+                currentProvinceIndex = 0;
+                memorizeRandom = false;
+                renderMemorizeMode();
+            } else if (mode === "entertain") {
+                entertainScore = 0;
+                entertainTotal = 0;
+                renderEntertainMode();
+            } else if (mode === "arena") {
+                renderArenaMode();
+            }
+            feedbackMsg.innerText = "";
+        }
+
+        // 绑定顶部tab事件
+        document.querySelectorAll(".mode-tab").forEach(btn => {
+            btn.addEventListener("click", () => setMode(btn.getAttribute("data-mode")));
+        });
+
+        // 初始化
+        setMode("memorize");
+    </script>
+</body>
+
+</html>
