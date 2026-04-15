@@ -1,12 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>中国省份记忆挑战</title>
     <style>
         * {
@@ -26,13 +22,14 @@
         }
 
         .app-card {
-            max-width: 550px;
+            max-width: 560px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.96);
             border-radius: 48px;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
             padding: 20px;
+            transition: all 0.2s;
         }
 
         .mode-tabs {
@@ -66,11 +63,16 @@
 
         .image-container {
             background: #fef9e8;
-            border-radius: 32px;
+            border-radius: 38px;
             padding: 20px;
             text-align: center;
             margin-bottom: 20px;
-            box-shadow: inset 0 0 0 2px white, 0 6px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 0 0 2px white, 0 8px 18px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: 0.05s linear;
+        }
+        .image-container:active {
+            transform: scale(0.99);
         }
 
         .province-img {
@@ -79,6 +81,7 @@
             width: auto;
             margin: 0 auto;
             display: block;
+            pointer-events: none;
         }
 
         .info-panel {
@@ -95,12 +98,13 @@
             font-weight: 800;
             color: #1e6f5c;
             margin: 5px 0;
+            transition: all 0.3s ease;
         }
 
         .score-board {
             display: flex;
             justify-content: space-between;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
             background: #e0ece9;
             padding: 10px 16px;
@@ -138,10 +142,10 @@
             gap: 15px;
             justify-content: center;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
 
-        .nav-btn,
-        .action-btn {
+        .nav-btn, .action-btn {
             background: #1e6f5c;
             border: none;
             color: white;
@@ -150,498 +154,791 @@
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.2s;
+        }
+        .nav-btn:hover, .action-btn:hover {
+            transform: scale(0.97);
+            filter: brightness(1.05);
         }
 
-        .action-btn {
-            background: #f4a261;
+        /* 光速结局后的金色重新挑战按钮 */
+        .restart-golden {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #2c3e2f;
+            border: 1px solid #ffde9e;
+            box-shadow: 0 2px 10px rgba(245,158,11,0.3);
+        }
+        .restart-golden:hover {
+            transform: scale(0.97);
+            filter: brightness(1.02);
         }
 
-        .reset-btn {
-            background: #e76f51;
-        }
-
-        .feedback {
-            text-align: center;
-            margin-top: 12px;
+        .toast-tip {
+            position: fixed;
+            bottom: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c3e50ee;
+            backdrop-filter: blur(8px);
+            color: #ffecb3;
+            padding: 10px 24px;
+            border-radius: 60px;
             font-weight: bold;
-            color: #e76f51;
+            z-index: 999;
+            font-size: 0.95rem;
+            white-space: normal;
+            max-width: 85%;
+            pointer-events: none;
+            animation: fadeUp 0.8s ease forwards;
+            text-align: center;
+            line-height: 1.4;
+        }
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px);}
+            15% { opacity: 1; transform: translateX(-50%) translateY(0px);}
+            85% { opacity: 1; transform: translateX(-50%) translateY(0px);}
+            100% { opacity: 0; transform: translateX(-50%) translateY(-15px); visibility: hidden;}
         }
 
-        .timer {
-            font-size: 1.4rem;
-            font-family: monospace;
-            background: #2c3e50;
-            color: #f4d03f;
-            padding: 4px 12px;
-            border-radius: 30px;
-            display: inline-block;
+        /* 淡金色按钮（光的颜色） */
+        .egg-button {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border: none;
+            color: #fcfcfc;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+            transition: all 0.2s;
+        }
+        .egg-button:hover {
+            transform: scale(0.98);
+            box-shadow: 0 6px 16px rgba(245,158,11,0.5);
+        }
+        .egg-button:active {
+            transform: scale(0.96);
+        }
+
+        /* 光速结局柔和金色样式 */
+        .light-speed-name {
+            color: #fbbf24 !important;
+            font-weight: 800;
+            text-shadow: 0 0 2px rgba(0,0,0,0.2);
+        }
+        .light-speed-extra {
+            color: #fcd34d !important;
+            font-weight: bold;
+        }
+
+        /* 粒子容器 */
+        .particle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, #ffd966, #f59e0b);
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: particleFall 1.2s ease-out forwards;
+        }
+        @keyframes particleFall {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0.9;
+            }
+            100% {
+                transform: translateY(80vh) scale(0.2);
+                opacity: 0;
+            }
         }
 
         @media (max-width: 500px) {
             .province-img {
-                max-height: 180px;
+                max-height: 160px;
             }
-
             .province-name {
                 font-size: 1.6rem;
             }
-
             .option-btn {
                 padding: 12px 0;
+            }
+            .toast-tip {
+                font-size: 0.85rem;
+                padding: 8px 18px;
             }
         }
     </style>
 </head>
-
 <body>
-    <div
-        class="app-card"
-        id="app"
-    >
-        <div class="mode-tabs">
-            <button
-                class="mode-tab"
-                data-mode="memorize"
-            >📖 记忆</button>
-            <button
-                class="mode-tab"
-                data-mode="entertain"
-            >🎮 娱乐</button>
-            <button
-                class="mode-tab"
-                data-mode="arena"
-            >⚡ 竞技</button>
-        </div>
-
-        <div class="image-container">
-            <img
-                id="provinceImg"
-                class="province-img"
-                alt="省份轮廓"
-            >
-        </div>
-
-        <div
-            class="info-panel"
-            id="infoPanel"
-        >
-            <div
-                id="provinceName"
-                class="province-name"
-            >---</div>
-            <div
-                id="extraInfo"
-                style="font-size:0.9rem; color:gray;"
-            ></div>
-        </div>
-
-        <div id="dynamicArea"></div>
-        <div
-            id="feedbackMsg"
-            class="feedback"
-        ></div>
+<div class="app-card" id="app">
+    <div class="mode-tabs">
+        <button class="mode-tab" data-mode="memorize">📖 记忆</button>
+        <button class="mode-tab" data-mode="entertain">🎮 娱乐</button>
+        <button class="mode-tab" data-mode="arena">⚡ 竞技</button>
     </div>
 
-    <script>
-        // ---------- 拼音省份列表（与 images 文件夹中的 SVG 文件名一致）----------
-        const PROVINCES_PINYIN = [
-            "beijing", "tianjin", "shanghai", "chongqing", "hebei", "shanxi", "liaoning", "jilin", "heilongjiang",
-            "jiangsu", "zhejiang", "anhui", "fujian", "jiangxi", "shandong", "henan", "hubei", "hunan",
-            "guangdong", "hainan", "sichuan", "guizhou", "yunnan", "shaanxi", "gansu", "qinghai", "taiwan",
-            "neimenggu", "guangxi", "xizang", "ningxia", "xinjiang", "xianggang", "aomen"
-        ];
+    <div class="image-container" id="imageClickZone">
+        <img id="provinceImg" class="province-img" alt="省份轮廓">
+    </div>
 
-        // 拼音 -> 中文名称映射
-        const NAME_MAP = {
-            "beijing": "北京市", "tianjin": "天津市", "shanghai": "上海市", "chongqing": "重庆市",
-            "hebei": "河北省", "shanxi": "山西省", "liaoning": "辽宁省", "jilin": "吉林省", "heilongjiang": "黑龙江省",
-            "jiangsu": "江苏省", "zhejiang": "浙江省", "anhui": "安徽省", "fujian": "福建省", "jiangxi": "江西省",
-            "shandong": "山东省", "henan": "河南省", "hubei": "湖北省", "hunan": "湖南省",
-            "guangdong": "广东省", "hainan": "海南省", "sichuan": "四川省", "guizhou": "贵州省", "yunnan": "云南省",
-            "shaanxi": "陕西省", "gansu": "甘肃省", "qinghai": "青海省", "taiwan": "台湾省",
-            "neimenggu": "内蒙古自治区", "guangxi": "广西壮族自治区", "xizang": "西藏自治区",
-            "ningxia": "宁夏回族自治区", "xinjiang": "新疆维吾尔自治区",
-            "xianggang": "香港特别行政区", "aomen": "澳门特别行政区"
-        };
+    <div class="info-panel" id="infoPanel">
+        <div id="provinceName" class="province-name">---</div>
+        <div id="extraInfo" style="font-size:0.85rem; color:gray;"></div>
+    </div>
 
-        // 辅助：根据拼音获取中文名
-        function getChineseName(pinyin) {
-            return NAME_MAP[pinyin] || pinyin;
+    <div id="dynamicArea"></div>
+</div>
+
+<script>
+    // ---------- 拼音省份列表（与 images 文件夹中的 SVG 文件名一致）----------
+    const PROVINCES_PINYIN = [
+        "beijing", "tianjin", "shanghai", "chongqing", "hebei", "shanxi", "liaoning", "jilin", "heilongjiang",
+        "jiangsu", "zhejiang", "anhui", "fujian", "jiangxi", "shandong", "henan", "hubei", "hunan",
+        "guangdong", "hainan", "sichuan", "guizhou", "yunnan", "shaanxi", "gansu", "qinghai", "taiwan",
+        "neimenggu", "guangxi", "xizang", "ningxia", "xinjiang", "xianggang", "aomen"
+    ];
+
+    const NAME_MAP = {
+        "beijing": "北京市", "tianjin": "天津市", "shanghai": "上海市", "chongqing": "重庆市",
+        "hebei": "河北省", "shanxi": "山西省", "liaoning": "辽宁省", "jilin": "吉林省", "heilongjiang": "黑龙江省",
+        "jiangsu": "江苏省", "zhejiang": "浙江省", "anhui": "安徽省", "fujian": "福建省", "jiangxi": "江西省",
+        "shandong": "山东省", "henan": "河南省", "hubei": "湖北省", "hunan": "湖南省",
+        "guangdong": "广东省", "hainan": "海南省", "sichuan": "四川省", "guizhou": "贵州省", "yunnan": "云南省",
+        "shaanxi": "陕西省", "gansu": "甘肃省", "qinghai": "青海省", "taiwan": "台湾省",
+        "neimenggu": "内蒙古自治区", "guangxi": "广西壮族自治区", "xizang": "西藏自治区",
+        "ningxia": "宁夏回族自治区", "xinjiang": "新疆维吾尔自治区",
+        "xianggang": "香港特别行政区", "aomen": "澳门特别行政区"
+    };
+
+    // 彩蛋文案 1~10 (已按要求优化)
+    const EGG_TEXTS = {
+        1: "咦，被你发现了",
+        2: "什么都没有发生，你只是点了2下",
+        3: "天，你到底想知道什么",
+        4: "被你猜到了，我是阿拉丁灯神",
+        5: "什么，你想要实现愿望",
+        6: "闭上眼睛，默默的许愿，我会实现你的愿望",
+        7: "当然啦，我确实实现不了你的愿望，但是你自己或许可以",
+        8: "毅力可嘉，你已经连续点了8下",
+        9: "小小的世界还不够？再探索下去，也许能到宇宙边界",
+        10: "你不仅好奇地理，更好奇世界如何运行。\n带着好奇心、毅力、热情探索下去吧"
+    };
+
+    function getChineseName(pinyin) {
+        return NAME_MAP[pinyin] || pinyin;
+    }
+
+    const IMG_BASE = "images/";
+    const IMG_EXT = ".svg";
+
+    // ---------- 全局状态 ----------
+    let currentMode = "memorize";
+    let currentProvinceIndex = 0;
+    let entertainScore = 0, entertainTotal = 0;
+    let arenaActive = false;
+    let arenaQuestions = [];
+    let arenaCurrentIndex = 0;
+    let arenaScore = 0;
+    let arenaStartTime = 0;
+    let arenaTimerInterval = null;
+    
+    let bestArenaScore = localStorage.getItem("bestArenaScore") ? JSON.parse(localStorage.getItem("bestArenaScore")) : { score: 0, time: 0 };
+    
+    let currentMemorizeOrder = [];
+    let memorizeRandom = false;
+    let entertainCurrentCorrectPinyin = null;
+
+    // 彩蛋永久开关
+    let eggPermanentDisabled = localStorage.getItem("eggPermanentTriggered") === "true";
+
+    // ---------- 竞技彩蛋专用变量（动态超时）----------
+    let arenaClickCount = 0;
+    let arenaLastClickTime = 0;
+    let arenaFirstClickTime = 0;
+    let arenaEggTriggered = false;
+    let arenaLightSpeedUsed = false;
+    let arenaStoredClickDuration = 0;
+    let eggButtonElement = null;        
+    let clickTimeoutId = null;
+    // 动态超时相关：存储最近5次点击间隔（毫秒）
+    let clickIntervals = [];
+    const MAX_INTERVALS = 5;
+
+    // 计算动态超时阈值：平均间隔 * 1.5 + 50ms，最小200ms，最大800ms
+    function getDynamicTimeout() {
+        if (clickIntervals.length === 0) return 400; // 默认400ms
+        const sum = clickIntervals.reduce((a,b) => a + b, 0);
+        const avg = sum / clickIntervals.length;
+        let timeout = avg * 1.5 + 50;
+        return Math.min(800, Math.max(200, timeout));
+    }
+
+    // DOM 元素
+    const imgEl = document.getElementById("provinceImg");
+    const provinceNameEl = document.getElementById("provinceName");
+    const extraInfoEl = document.getElementById("extraInfo");
+    const dynamicArea = document.getElementById("dynamicArea");
+    const imageZone = document.getElementById("imageClickZone");
+
+    // 辅助函数：显示浮层
+    function showToastMessage(msg, duration = 3000) {
+        const toast = document.createElement("div");
+        toast.className = "toast-tip";
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), duration);
+    }
+
+    // 粒子效果
+    function createParticleEffect() {
+        const container = document.createElement('div');
+        container.className = 'particle-container';
+        document.body.appendChild(container);
+        const particleCount = 40;
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            const size = 6 + Math.random() * 12;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = '20%';
+            particle.style.animationDelay = Math.random() * 0.5 + 's';
+            particle.style.animationDuration = 0.8 + Math.random() * 0.7 + 's';
+            container.appendChild(particle);
         }
+        setTimeout(() => container.remove(), 1500);
+    }
 
-        // 图片路径配置
-        const IMG_BASE = "images/";
-        const IMG_EXT = ".svg";
-
-        // 全局状态
-        let currentMode = "memorize";
-        let currentProvinceIndex = 0;          // 索引基于 PROVINCES_PINYIN
-        let entertainScore = 0;
-        let entertainTotal = 0;
-        let arenaActive = false;
-        let arenaQuestions = [];                 // 存放题目 { correctPinyin, optionsPinyin[] }
-        let arenaCurrentIndex = 0;
-        let arenaScore = 0;
-        let arenaStartTime = 0;
-        let arenaTimerInterval = null;
-        let bestArenaScore = localStorage.getItem("bestArenaScore") ? JSON.parse(localStorage.getItem("bestArenaScore")) : { score: 0, time: 0 };
-        let currentMemorizeOrder = [];
-        let memorizeRandom = false;
-
-        // 娱乐模式专用
-        let entertainCurrentCorrectPinyin = null;
-
-        // DOM 元素
-        const imgEl = document.getElementById("provinceImg");
-        const provinceNameEl = document.getElementById("provinceName");
-        const extraInfoEl = document.getElementById("extraInfo");
-        const dynamicArea = document.getElementById("dynamicArea");
-        const feedbackMsg = document.getElementById("feedbackMsg");
-
-        // 加载图片（传入拼音）
-        function loadProvinceImage(pinyin) {
-            imgEl.src = `${IMG_BASE}${pinyin}${IMG_EXT}`;
-            imgEl.onerror = () => {
-                imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ccc'/%3E%3Ctext x='50' y='55' font-size='12' text-anchor='middle' fill='red'%3E图片缺失%3C/text%3E%3C/svg%3E";
-            };
-            provinceNameEl.innerText = getChineseName(pinyin);
+    function clearClickTimeout() {
+        if (clickTimeoutId) {
+            clearTimeout(clickTimeoutId);
+            clickTimeoutId = null;
         }
+    }
 
-        // 随机打乱数组
-        function shuffleArray(arr) {
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-            return arr;
+    function resetTextStyles() {
+        provinceNameEl.classList.remove("light-speed-name");
+        extraInfoEl.classList.remove("light-speed-extra");
+        provinceNameEl.style.color = "";
+        provinceNameEl.style.textShadow = "";
+        extraInfoEl.style.color = "";
+    }
+
+    // 连点结束逻辑（动态超时触发）
+    function onComboEnd() {
+        if (!arenaActive) return;
+        if (arenaLightSpeedUsed) return;
+        if (eggPermanentDisabled) {
+            arenaClickCount = 0;
+            arenaFirstClickTime = 0;
+            clickIntervals = [];
+            return;
         }
-
-        // 生成随机选项：返回选项拼音数组（包含正确拼音和三个不同错误拼音）
-        function generateOptions(correctPinyin, excludeIndex) {
-            let others = PROVINCES_PINYIN.filter((_, idx) => idx !== excludeIndex);
-            others = shuffleArray([...others]);
-            let opts = [correctPinyin];
-            for (let i = 0; i < 3 && i < others.length; i++) opts.push(others[i]);
-            return shuffleArray(opts);
-        }
-
-        // 刷新当前模式界面
-        function renderMode() {
-            if (currentMode === "memorize") {
-                renderMemorizeMode();
-            } else if (currentMode === "entertain") {
-                renderEntertainMode();
-            } else if (currentMode === "arena") {
-                renderArenaMode();
-            }
-        }
-
-        // ---------- 记忆模式 ----------
-        function renderMemorizeMode() {
-            clearArenaTimer();
-            arenaActive = false;
-            dynamicArea.innerHTML = `
-                <div class="nav-buttons">
-                    <button class="nav-btn" id="prevBtn">◀ 上一个</button>
-                    <button class="nav-btn" id="randomOrderBtn">🎲 随机顺序</button>
-                    <button class="nav-btn" id="nextBtn">下一个 ▶</button>
-                </div>
-                <div class="score-board" style="justify-content:center; gap:20px;">
-                    <span>📌 当前: ${getChineseName(PROVINCES_PINYIN[currentProvinceIndex])}</span>
-                </div>
-            `;
-            extraInfoEl.innerText = "👆 点击左右按钮浏览省份轮廓";
-            loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
-
-            document.getElementById("prevBtn")?.addEventListener("click", () => {
-                if (memorizeRandom && currentMemorizeOrder.length) {
-                    let idx = currentMemorizeOrder.indexOf(currentProvinceIndex);
-                    let prev = (idx - 1 + currentMemorizeOrder.length) % currentMemorizeOrder.length;
-                    currentProvinceIndex = currentMemorizeOrder[prev];
-                } else {
-                    currentProvinceIndex = (currentProvinceIndex - 1 + PROVINCES_PINYIN.length) % PROVINCES_PINYIN.length;
+        
+        const finalCount = arenaClickCount;
+        if (finalCount >= 1 && finalCount <= 10) {
+            showToastMessage(EGG_TEXTS[finalCount], 5000);
+            
+            if (finalCount === 10 && !arenaEggTriggered && !arenaLightSpeedUsed && !eggPermanentDisabled) {
+                eggPermanentDisabled = true;
+                localStorage.setItem("eggPermanentTriggered", "true");
+                arenaEggTriggered = true;
+                
+                const endTime = Date.now();
+                const durationSec = (endTime - arenaFirstClickTime) / 1000;
+                arenaStoredClickDuration = durationSec;
+                
+                const container = document.getElementById("eggButtonContainer");
+                if (container) {
+                    if (eggButtonElement) eggButtonElement.remove();
+                    const btn = document.createElement("button");
+                    btn.className = "egg-button";
+                    btn.innerText = "成为光";   // 精简文字
+                    btn.onclick = () => {
+                        if (arenaLightSpeedUsed) return;
+                        finishWithLightSpeed(arenaStoredClickDuration);
+                    };
+                    container.innerHTML = "";
+                    container.appendChild(btn);
+                    eggButtonElement = btn;
                 }
-                loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
-            });
-            document.getElementById("nextBtn")?.addEventListener("click", () => {
-                if (memorizeRandom && currentMemorizeOrder.length) {
-                    let idx = currentMemorizeOrder.indexOf(currentProvinceIndex);
-                    let next = (idx + 1) % currentMemorizeOrder.length;
-                    currentProvinceIndex = currentMemorizeOrder[next];
-                } else {
-                    currentProvinceIndex = (currentProvinceIndex + 1) % PROVINCES_PINYIN.length;
-                }
-                loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
-            });
-            document.getElementById("randomOrderBtn")?.addEventListener("click", () => {
-                memorizeRandom = true;
-                currentMemorizeOrder = shuffleArray([...Array(PROVINCES_PINYIN.length).keys()]);
-                currentProvinceIndex = currentMemorizeOrder[0];
-                loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
-                feedbackMsg.innerText = "已切换为随机顺序模式！";
-                setTimeout(() => feedbackMsg.innerText = "", 1500);
-            });
-        }
-
-        // ---------- 娱乐模式 ----------
-        function renderEntertainMode() {
-            clearArenaTimer();
-            arenaActive = false;
-            // 随机选题
-            const randIndex = Math.floor(Math.random() * PROVINCES_PINYIN.length);
-            const correctPinyin = PROVINCES_PINYIN[randIndex];
-            const optionsPinyin = generateOptions(correctPinyin, randIndex);
-            entertainCurrentCorrectPinyin = correctPinyin;
-            // 显示图片
-            imgEl.src = `${IMG_BASE}${correctPinyin}${IMG_EXT}`;
-            imgEl.onerror = () => { imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ccc'/%3E%3Ctext x='50' y='55' font-size='12' text-anchor='middle' fill='red'%3E图片缺失%3C/text%3E%3C/svg%3E"; };
-            provinceNameEl.innerText = "???";
-
-            let optsHtml = '';
-            optionsPinyin.forEach(optPinyin => {
-                optsHtml += `<button class="option-btn" data-opt="${optPinyin}">${getChineseName(optPinyin)}</button>`;
-            });
-            dynamicArea.innerHTML = `
-                <div class="score-board">
-                    <span>🏆 得分: ${entertainScore}</span>
-                    <span>📊 已答: ${entertainTotal}</span>
-                </div>
-                <div class="options-grid" id="optionsGrid">
-                    ${optsHtml}
-                </div>
-                <div class="nav-buttons">
-                    <button class="action-btn" id="nextEntertainBtn">下一题 ➡</button>
-                </div>
-            `;
-            // 绑定选项事件
-            document.querySelectorAll(".option-btn").forEach(btn => {
-                btn.addEventListener("click", (e) => {
-                    if (arenaActive) return;
-                    const selectedPinyin = e.target.getAttribute("data-opt");
-                    if (selectedPinyin === entertainCurrentCorrectPinyin) {
-                        entertainScore++;
-                        entertainTotal++;
-                        feedbackMsg.innerText = "✅ 正确！ +1分";
-                        setTimeout(() => {
-                            feedbackMsg.innerText = "";
-                            nextEntertainQuestion();
-                        }, 800);
-                    } else {
-                        entertainTotal++;
-                        feedbackMsg.innerText = `❌ 错误！ 正确答案是 ${getChineseName(entertainCurrentCorrectPinyin)}`;
-                        setTimeout(() => {
-                            feedbackMsg.innerText = "";
-                            nextEntertainQuestion();
-                        }, 1500);
-                    }
-                    document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
-                    setTimeout(() => {
-                        document.querySelectorAll(".option-btn").forEach(b => b.disabled = false);
-                    }, 1500);
-                });
-            });
-            document.getElementById("nextEntertainBtn")?.addEventListener("click", () => {
-                nextEntertainQuestion();
-            });
-            extraInfoEl.innerText = "🎯 点击正确选项，答对得分";
-        }
-
-        function nextEntertainQuestion() {
-            const randIndex = Math.floor(Math.random() * PROVINCES_PINYIN.length);
-            const correctPinyin = PROVINCES_PINYIN[randIndex];
-            const optionsPinyin = generateOptions(correctPinyin, randIndex);
-            entertainCurrentCorrectPinyin = correctPinyin;
-            imgEl.src = `${IMG_BASE}${correctPinyin}${IMG_EXT}`;
-            imgEl.onerror = () => { imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ccc'/%3E%3Ctext x='50' y='55' font-size='12' text-anchor='middle' fill='red'%3E图片缺失%3C/text%3E%3C/svg%3E"; };
-            provinceNameEl.innerText = "???";
-            let optsHtml = '';
-            optionsPinyin.forEach(optPinyin => {
-                optsHtml += `<button class="option-btn" data-opt="${optPinyin}">${getChineseName(optPinyin)}</button>`;
-            });
-            const grid = document.getElementById("optionsGrid");
-            if (grid) grid.innerHTML = optsHtml;
-            // 重新绑定
-            document.querySelectorAll(".option-btn").forEach(btn => {
-                btn.addEventListener("click", (e) => {
-                    if (arenaActive) return;
-                    const selectedPinyin = e.target.getAttribute("data-opt");
-                    if (selectedPinyin === entertainCurrentCorrectPinyin) {
-                        entertainScore++;
-                        entertainTotal++;
-                        feedbackMsg.innerText = "✅ 正确！ +1分";
-                        setTimeout(() => {
-                            feedbackMsg.innerText = "";
-                            nextEntertainQuestion();
-                        }, 800);
-                    } else {
-                        entertainTotal++;
-                        feedbackMsg.innerText = `❌ 错误！ 正确答案是 ${getChineseName(entertainCurrentCorrectPinyin)}`;
-                        setTimeout(() => {
-                            feedbackMsg.innerText = "";
-                            nextEntertainQuestion();
-                        }, 1500);
-                    }
-                    document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
-                    setTimeout(() => {
-                        document.querySelectorAll(".option-btn").forEach(b => b.disabled = false);
-                    }, 1500);
-                });
-            });
-            const scoreBoard = document.querySelector(".score-board");
-            if (scoreBoard) {
-                scoreBoard.innerHTML = `<span>🏆 得分: ${entertainScore}</span><span>📊 已答: ${entertainTotal}</span>`;
             }
         }
+        // 重置连点数据
+        arenaClickCount = 0;
+        arenaFirstClickTime = 0;
+        clickIntervals = [];
+    }
 
-        // ---------- 竞技模式 ----------
-        function startArena() {
-            if (arenaActive) return;
-            arenaQuestions = [];
-            for (let i = 0; i < 10; i++) {
-                const randIdx = Math.floor(Math.random() * PROVINCES_PINYIN.length);
-                const correctPinyin = PROVINCES_PINYIN[randIdx];
-                const optsPinyin = generateOptions(correctPinyin, randIdx);
-                arenaQuestions.push({ correctPinyin: correctPinyin, optionsPinyin: optsPinyin });
+    // 图片点击事件（动态超时）
+    function onImageClick() {
+        if (!arenaActive && currentMode === 'arena') {
+            startArena();
+            return;
+        }
+        if (!arenaActive) return;
+        if (arenaLightSpeedUsed) return;
+        if (eggPermanentDisabled) return;
+        
+        const now = Date.now();
+        // 计算本次间隔
+        if (arenaLastClickTime !== 0) {
+            const interval = now - arenaLastClickTime;
+            if (interval <= 1000) { // 有效间隔加入队列
+                clickIntervals.push(interval);
+                if (clickIntervals.length > MAX_INTERVALS) clickIntervals.shift();
             }
-            arenaCurrentIndex = 0;
-            arenaScore = 0;
-            arenaStartTime = Date.now();
-            arenaActive = true;
-            if (arenaTimerInterval) clearInterval(arenaTimerInterval);
-            arenaTimerInterval = setInterval(updateArenaTimer, 100);
-            renderArenaQuestion();
         }
-
-        function updateArenaTimer() {
-            if (!arenaActive) return;
-            const elapsed = Math.floor((Date.now() - arenaStartTime) / 1000);
-            const timerSpan = document.getElementById("arenaTimer");
-            if (timerSpan) timerSpan.innerText = `${elapsed}s`;
-        }
-
-        function renderArenaQuestion() {
-            if (!arenaActive || arenaCurrentIndex >= arenaQuestions.length) {
-                endArenaGame();
-                return;
+        
+        if (arenaClickCount === 0 || (now - arenaLastClickTime) > getDynamicTimeout()) {
+            // 新序列开始
+            arenaClickCount = 1;
+            arenaFirstClickTime = now;
+            clickIntervals = []; // 清空历史间隔
+        } else {
+            if (arenaClickCount < 10) {
+                arenaClickCount++;
             }
-            const q = arenaQuestions[arenaCurrentIndex];
-            imgEl.src = `${IMG_BASE}${q.correctPinyin}${IMG_EXT}`;
-            imgEl.onerror = () => { imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ccc'/%3E%3Ctext x='50' y='55' font-size='12' text-anchor='middle' fill='red'%3E图片缺失%3C/text%3E%3C/svg%3E"; };
-            provinceNameEl.innerText = "???";
-            let optsHtml = '';
-            q.optionsPinyin.forEach(optPinyin => {
-                optsHtml += `<button class="option-btn arena-opt" data-opt="${optPinyin}">${getChineseName(optPinyin)}</button>`;
-            });
-            dynamicArea.innerHTML = `
-                <div class="score-board">
-                    <span>⚡ 第 ${arenaCurrentIndex + 1} / 10 题</span>
-                    <span>🏅 得分: ${arenaScore}</span>
-                    <span>⏱️ <span id="arenaTimer">0</span> s</span>
-                </div>
-                <div class="options-grid" id="arenaOptions">
-                    ${optsHtml}
-                </div>
-            `;
-            document.querySelectorAll(".arena-opt").forEach(btn => {
-                btn.addEventListener("click", (e) => {
-                    if (!arenaActive) return;
-                    const selectedPinyin = e.target.getAttribute("data-opt");
-                    if (selectedPinyin === q.correctPinyin) {
-                        arenaScore += 10;
-                        feedbackMsg.innerText = "🎉 +10分！";
-                        setTimeout(() => feedbackMsg.innerText = "", 500);
-                        arenaCurrentIndex++;
-                        renderArenaQuestion();
-                    } else {
-                        feedbackMsg.innerText = `❌ 错误！正确答案是 ${getChineseName(q.correctPinyin)}。游戏结束。`;
-                        endArenaGame();
-                    }
-                });
-            });
-            extraInfoEl.innerText = "⚡ 限时挑战，答错即结束！";
         }
+        arenaLastClickTime = now;
+        
+        clearClickTimeout();
+        const dynamicTimeout = getDynamicTimeout();
+        clickTimeoutId = setTimeout(() => {
+            onComboEnd();
+            clearClickTimeout();
+        }, dynamicTimeout);
+    }
 
-        function endArenaGame() {
-            if (!arenaActive) return;
-            arenaActive = false;
-            clearInterval(arenaTimerInterval);
-            const elapsed = Math.floor((Date.now() - arenaStartTime) / 1000);
-            const finalScore = arenaScore;
-            let recordMsg = "";
-            if (finalScore > bestArenaScore.score || (finalScore === bestArenaScore.score && elapsed < bestArenaScore.time)) {
-                bestArenaScore = { score: finalScore, time: elapsed };
-                localStorage.setItem("bestArenaScore", JSON.stringify(bestArenaScore));
-                recordMsg = " 🎉 新纪录！";
-            }
-            dynamicArea.innerHTML = `
-                <div class="score-board">
-                    <span>🏁 最终得分: ${finalScore}</span>
-                    <span>⏱️ 用时: ${elapsed}秒</span>
-                </div>
-                <div class="nav-buttons">
-                    <button class="action-btn" id="restartArenaBtn">🔄 重新挑战</button>
-                </div>
-                <div>🏆 最佳: ${bestArenaScore.score}分 (${bestArenaScore.time}秒)${recordMsg}</div>
-            `;
-            document.getElementById("restartArenaBtn")?.addEventListener("click", () => {
-                startArena();
-            });
-            provinceNameEl.innerText = "挑战结束";
-            extraInfoEl.innerText = "点击重新挑战继续竞技";
-        }
-
-        function renderArenaMode() {
-            clearArenaTimer();
-            arenaActive = false;
-            dynamicArea.innerHTML = `
-                <div class="nav-buttons">
-                    <button class="action-btn" id="startArenaBtn">🏁 开始10题挑战</button>
-                </div>
-                <div>🏆 最佳记录: ${bestArenaScore.score}分 (${bestArenaScore.time}秒)</div>
-            `;
-            provinceNameEl.innerText = "竞技模式";
-            imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e0ece9'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%231e6f5c'%3E⚡点击开始%3C/text%3E%3C/svg%3E";
-            extraInfoEl.innerText = "限时10题，答错即结束，分数越高越好";
-            document.getElementById("startArenaBtn")?.addEventListener("click", startArena);
-        }
-
-        function clearArenaTimer() {
-            if (arenaTimerInterval) clearInterval(arenaTimerInterval);
-            arenaTimerInterval = null;
-            arenaActive = false;
-        }
-
-        // 模式切换
-        function setMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll(".mode-tab").forEach(tab => {
-                if (tab.getAttribute("data-mode") === mode) tab.classList.add("active");
-                else tab.classList.remove("active");
-            });
-            if (mode === "memorize") {
-                entertainScore = 0;
-                entertainTotal = 0;
-                currentProvinceIndex = 0;
-                memorizeRandom = false;
-                renderMemorizeMode();
-            } else if (mode === "entertain") {
-                entertainScore = 0;
-                entertainTotal = 0;
-                renderEntertainMode();
-            } else if (mode === "arena") {
-                renderArenaMode();
-            }
-            feedbackMsg.innerText = "";
-        }
-
-        // 绑定顶部tab事件
-        document.querySelectorAll(".mode-tab").forEach(btn => {
-            btn.addEventListener("click", () => setMode(btn.getAttribute("data-mode")));
+    // 光速结局
+    function finishWithLightSpeed(clickDurationSec) {
+        if (!arenaActive) return;
+        if (arenaLightSpeedUsed) return;
+        arenaLightSpeedUsed = true;
+        arenaActive = false;
+        stopArenaTimer();
+        clearClickTimeout();
+        
+        // 播放粒子特效
+        createParticleEffect();
+        
+        const finalScore = 1000;
+        const finalTime = clickDurationSec;
+        
+        provinceNameEl.classList.add("light-speed-name");
+        extraInfoEl.classList.add("light-speed-extra");
+        
+        dynamicArea.innerHTML = `
+            <div class="score-board">
+                <span>🏁 最终得分: ${finalScore}</span>
+                <span>⏱️ 用时: ${finalTime.toFixed(1)}秒</span>
+            </div>
+            <div class="nav-buttons">
+                <button class="action-btn restart-golden" id="restartArenaBtn">🔄 重新挑战</button>
+            </div>
+            <div style="margin-top:12px;">🏆 最佳记录: ${bestArenaScore.score}分 (${bestArenaScore.time}秒)</div>
+            <div style="margin-top:8px; font-size:0.9rem; color:#fbbf24; font-weight:bold;">⚡ 光芒之力 · 超越极限 ⚡</div>
+        `;
+        document.getElementById("restartArenaBtn")?.addEventListener("click", () => {
+            resetTextStyles();
+            fullResetArenaEgg();
+            startArena();
         });
+        provinceNameEl.innerText = "光之使者";
+        extraInfoEl.innerText = "你以光速完成了挑战";
+        if (eggButtonElement && eggButtonElement.parentNode) eggButtonElement.remove();
+        eggButtonElement = null;
+    }
 
-        // 初始化
-        setMode("memorize");
-    </script>
+    // 正常结束游戏
+    function endArenaGame() {
+        if (!arenaActive) return;
+        if (arenaLightSpeedUsed) return;
+        arenaActive = false;
+        stopArenaTimer();
+        clearClickTimeout();
+        resetTextStyles();
+        
+        const elapsed = Math.floor((Date.now() - arenaStartTime) / 1000);
+        const finalScore = arenaScore;
+        let recordMsg = "";
+        
+        if (finalScore > bestArenaScore.score || (finalScore === bestArenaScore.score && elapsed < bestArenaScore.time)) {
+            bestArenaScore = { score: finalScore, time: elapsed };
+            localStorage.setItem("bestArenaScore", JSON.stringify(bestArenaScore));
+            recordMsg = " 🎉 新纪录！";
+        }
+        
+        dynamicArea.innerHTML = `
+            <div class="score-board">
+                <span>🏁 最终得分: ${finalScore}</span>
+                <span>⏱️ 用时: ${elapsed}秒</span>
+            </div>
+            <div class="nav-buttons">
+                <button class="action-btn" id="restartArenaBtn">🔄 重新挑战</button>
+            </div>
+            <div style="margin-top:12px;">🏆 最佳记录: ${bestArenaScore.score}分 (${bestArenaScore.time}秒)${recordMsg}</div>
+        `;
+        document.getElementById("restartArenaBtn")?.addEventListener("click", () => {
+            resetTextStyles();
+            fullResetArenaEgg();
+            startArena();
+        });
+        provinceNameEl.innerText = "挑战结束";
+        extraInfoEl.innerText = "点击重新挑战继续竞技";
+        if (eggButtonElement && eggButtonElement.parentNode) eggButtonElement.remove();
+        eggButtonElement = null;
+    }
+
+    function updateArenaTimer() {
+        if (!arenaActive) return;
+        const elapsed = Math.floor((Date.now() - arenaStartTime) / 1000);
+        const timerSpan = document.getElementById("arenaTimer");
+        if (timerSpan) timerSpan.innerText = `${elapsed}s`;
+    }
+
+    function stopArenaTimer() {
+        if (arenaTimerInterval) {
+            clearInterval(arenaTimerInterval);
+            arenaTimerInterval = null;
+        }
+    }
+
+    function startArenaTimer() {
+        if (arenaTimerInterval) stopArenaTimer();
+        arenaTimerInterval = setInterval(updateArenaTimer, 200);
+    }
+
+    function renderArenaQuestion() {
+        if (!arenaActive || arenaCurrentIndex >= arenaQuestions.length) {
+            if (arenaCurrentIndex >= arenaQuestions.length && arenaActive && !arenaLightSpeedUsed) endArenaGame();
+            return;
+        }
+        resetArenaEggState();
+        
+        const q = arenaQuestions[arenaCurrentIndex];
+        loadProvinceImage(q.correctPinyin);
+        provinceNameEl.innerText = "???";
+        let optsHtml = '';
+        q.optionsPinyin.forEach(optPinyin => {
+            optsHtml += `<button class="option-btn arena-opt" data-opt="${optPinyin}">${getChineseName(optPinyin)}</button>`;
+        });
+        dynamicArea.innerHTML = `
+            <div class="score-board">
+                <span>⚡ 第 ${arenaCurrentIndex + 1} / 10 题</span>
+                <span>🏅 得分: ${arenaScore}</span>
+                <span>⏱️ <span id="arenaTimer">${Math.floor((Date.now() - arenaStartTime) / 1000)}</span> s</span>
+            </div>
+            <div class="options-grid" id="arenaOptions">
+                ${optsHtml}
+            </div>
+            <div id="eggButtonContainer"></div>
+        `;
+        document.querySelectorAll(".arena-opt").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                if (!arenaActive) return;
+                if (arenaLightSpeedUsed) return;
+                const selectedPinyin = e.target.getAttribute("data-opt");
+                if (selectedPinyin === q.correctPinyin) {
+                    arenaScore += 10;
+                    arenaCurrentIndex++;
+                    renderArenaQuestion();
+                } else {
+                    endArenaGame();
+                }
+            });
+        });
+        extraInfoEl.innerText = "限时挑战，答错即结束";
+    }
+
+    function startArena() {
+        if (arenaActive) return;
+        resetTextStyles();
+        fullResetArenaEgg();
+        arenaQuestions = [];
+        for (let i = 0; i < 10; i++) {
+            const randIdx = Math.floor(Math.random() * PROVINCES_PINYIN.length);
+            const correctPinyin = PROVINCES_PINYIN[randIdx];
+            const optsPinyin = generateOptions(correctPinyin, randIdx);
+            arenaQuestions.push({ correctPinyin: correctPinyin, optionsPinyin: optsPinyin });
+        }
+        arenaCurrentIndex = 0;
+        arenaScore = 0;
+        arenaStartTime = Date.now();
+        arenaActive = true;
+        startArenaTimer();
+        renderArenaQuestion();
+    }
+
+    function renderArenaMode() {
+        stopArenaTimer();
+        arenaActive = false;
+        resetTextStyles();
+        fullResetArenaEgg();
+        dynamicArea.innerHTML = `
+            <div class="nav-buttons">
+                <button class="action-btn" id="startArenaBtn">🏁 开始10题挑战</button>
+            </div>
+            <div style="margin-top:12px;">🏆 最佳记录: ${bestArenaScore.score}分 (${bestArenaScore.time}秒)</div>
+        `;
+        provinceNameEl.innerText = "竞技模式";
+        imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e0ece9'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%231e6f5c' font-size='14'%3E⚡点击开始%3C/text%3E%3C/svg%3E";
+        extraInfoEl.innerText = "点击图片或按钮开始挑战";
+        document.getElementById("startArenaBtn")?.addEventListener("click", () => {
+            fullResetArenaEgg();
+            startArena();
+        });
+    }
+
+    function resetArenaEggState() {
+        arenaClickCount = 0;
+        arenaLastClickTime = 0;
+        arenaFirstClickTime = 0;
+        arenaStoredClickDuration = 0;
+        clickIntervals = [];
+        if (eggButtonElement && eggButtonElement.parentNode) eggButtonElement.remove();
+        eggButtonElement = null;
+        clearClickTimeout();
+    }
+
+    function fullResetArenaEgg() {
+        resetArenaEggState();
+        arenaEggTriggered = false;
+        arenaLightSpeedUsed = false;
+        arenaStoredClickDuration = 0;
+    }
+
+    // 重置彩蛋隐藏入口 (记忆模式下点击当前省份名)
+    let resetClickCount = 0;
+    let resetLastClickTime = 0;
+    let resetTimeoutId = null;
+    function onMemorizeNameClick() {
+        if (currentMode !== 'memorize') return;
+        const now = Date.now();
+        if (resetClickCount === 0 || (now - resetLastClickTime) > 500) {
+            resetClickCount = 1;
+        } else {
+            resetClickCount++;
+        }
+        resetLastClickTime = now;
+        if (resetTimeoutId) clearTimeout(resetTimeoutId);
+        resetTimeoutId = setTimeout(() => {
+            if (resetClickCount >= 10) {
+                // 重置彩蛋永久禁用标记
+                localStorage.removeItem("eggPermanentTriggered");
+                eggPermanentDisabled = false;
+                showToastMessage("✨ 隐藏彩蛋已重置，你可以再次探索光之力量 ✨", 3500);
+                resetClickCount = 0;
+            } else {
+                resetClickCount = 0;
+            }
+            resetTimeoutId = null;
+        }, 500);
+    }
+
+    // 生成选项等基础函数
+    function generateOptions(correctPinyin, excludeIndex) {
+        let others = PROVINCES_PINYIN.filter((_, idx) => idx !== excludeIndex);
+        others = shuffleArray([...others]);
+        let opts = [correctPinyin];
+        for (let i = 0; i < 3 && i < others.length; i++) opts.push(others[i]);
+        return shuffleArray(opts);
+    }
+
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function loadProvinceImage(pinyin) {
+        imgEl.src = `${IMG_BASE}${pinyin}${IMG_EXT}`;
+        imgEl.onerror = () => {
+            imgEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ccc'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='red'%3E图片缺失%3C/text%3E%3C/svg%3E";
+        };
+    }
+
+    // 记忆模式 (绑定重置彩蛋的点击事件)
+    function renderMemorizeMode() {
+        stopArenaTimer();
+        arenaActive = false;
+        resetTextStyles();
+        fullResetArenaEgg();
+        dynamicArea.innerHTML = `
+            <div class="nav-buttons">
+                <button class="nav-btn" id="prevBtn">◀ 上一个</button>
+                <button class="nav-btn" id="randomOrderBtn">🎲 随机顺序</button>
+                <button class="nav-btn" id="nextBtn">下一个 ▶</button>
+            </div>
+            <div class="score-board" style="justify-content:center; gap:20px; margin-top:15px;">
+                <span id="currentProvinceSpan" style="cursor:pointer;">📌 当前: ${getChineseName(PROVINCES_PINYIN[currentProvinceIndex])}</span>
+            </div>
+        `;
+        extraInfoEl.innerText = "点击左右按钮浏览省份轮廓";
+        loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
+        provinceNameEl.innerText = getChineseName(PROVINCES_PINYIN[currentProvinceIndex]);
+        
+        // 绑定重置彩蛋事件
+        const span = document.getElementById("currentProvinceSpan");
+        if (span) span.addEventListener("click", onMemorizeNameClick);
+        
+        document.getElementById("prevBtn")?.addEventListener("click", () => {
+            if (memorizeRandom && currentMemorizeOrder.length) {
+                let idx = currentMemorizeOrder.indexOf(currentProvinceIndex);
+                let prev = (idx - 1 + currentMemorizeOrder.length) % currentMemorizeOrder.length;
+                currentProvinceIndex = currentMemorizeOrder[prev];
+            } else {
+                currentProvinceIndex = (currentProvinceIndex - 1 + PROVINCES_PINYIN.length) % PROVINCES_PINYIN.length;
+            }
+            loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
+            provinceNameEl.innerText = getChineseName(PROVINCES_PINYIN[currentProvinceIndex]);
+            if (span) span.innerText = `📌 当前: ${getChineseName(PROVINCES_PINYIN[currentProvinceIndex])}`;
+        });
+        document.getElementById("nextBtn")?.addEventListener("click", () => {
+            if (memorizeRandom && currentMemorizeOrder.length) {
+                let idx = currentMemorizeOrder.indexOf(currentProvinceIndex);
+                let next = (idx + 1) % currentMemorizeOrder.length;
+                currentProvinceIndex = currentMemorizeOrder[next];
+            } else {
+                currentProvinceIndex = (currentProvinceIndex + 1) % PROVINCES_PINYIN.length;
+            }
+            loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
+            provinceNameEl.innerText = getChineseName(PROVINCES_PINYIN[currentProvinceIndex]);
+            if (span) span.innerText = `📌 当前: ${getChineseName(PROVINCES_PINYIN[currentProvinceIndex])}`;
+        });
+        document.getElementById("randomOrderBtn")?.addEventListener("click", () => {
+            memorizeRandom = true;
+            currentMemorizeOrder = shuffleArray([...Array(PROVINCES_PINYIN.length).keys()]);
+            currentProvinceIndex = currentMemorizeOrder[0];
+            loadProvinceImage(PROVINCES_PINYIN[currentProvinceIndex]);
+            provinceNameEl.innerText = getChineseName(PROVINCES_PINYIN[currentProvinceIndex]);
+            if (span) span.innerText = `📌 当前: ${getChineseName(PROVINCES_PINYIN[currentProvinceIndex])}`;
+            showToastMessage("随机顺序模式已开启");
+        });
+    }
+
+    // 娱乐模式（简略，保持原有）
+    function nextEntertainQuestion() {
+        const randIndex = Math.floor(Math.random() * PROVINCES_PINYIN.length);
+        const correctPinyin = PROVINCES_PINYIN[randIndex];
+        const optionsPinyin = generateOptions(correctPinyin, randIndex);
+        entertainCurrentCorrectPinyin = correctPinyin;
+        loadProvinceImage(correctPinyin);
+        provinceNameEl.innerText = "???";
+        let optsHtml = '';
+        optionsPinyin.forEach(optPinyin => {
+            optsHtml += `<button class="option-btn" data-opt="${optPinyin}">${getChineseName(optPinyin)}</button>`;
+        });
+        const grid = document.getElementById("optionsGrid");
+        if (grid) grid.innerHTML = optsHtml;
+        document.querySelectorAll(".option-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                if (arenaActive) return;
+                const selectedPinyin = e.target.getAttribute("data-opt");
+                if (selectedPinyin === entertainCurrentCorrectPinyin) {
+                    entertainScore++;
+                    entertainTotal++;
+                    setTimeout(() => nextEntertainQuestion(), 600);
+                } else {
+                    entertainTotal++;
+                    setTimeout(() => nextEntertainQuestion(), 1200);
+                }
+                document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+                setTimeout(() => {
+                    document.querySelectorAll(".option-btn").forEach(b => b.disabled = false);
+                }, 1000);
+            });
+        });
+        const scoreBoard = document.querySelector(".score-board");
+        if (scoreBoard) scoreBoard.innerHTML = `<span>🏆 得分: ${entertainScore}</span><span>📊 已答: ${entertainTotal}</span>`;
+    }
+
+    function renderEntertainMode() {
+        stopArenaTimer();
+        arenaActive = false;
+        resetTextStyles();
+        fullResetArenaEgg();
+        entertainScore = 0;
+        entertainTotal = 0;
+        const randIndex = Math.floor(Math.random() * PROVINCES_PINYIN.length);
+        entertainCurrentCorrectPinyin = PROVINCES_PINYIN[randIndex];
+        const optionsPinyin = generateOptions(entertainCurrentCorrectPinyin, randIndex);
+        loadProvinceImage(entertainCurrentCorrectPinyin);
+        provinceNameEl.innerText = "???";
+        let optsHtml = '';
+        optionsPinyin.forEach(optPinyin => {
+            optsHtml += `<button class="option-btn" data-opt="${optPinyin}">${getChineseName(optPinyin)}</button>`;
+        });
+        dynamicArea.innerHTML = `
+            <div class="score-board">
+                <span>🏆 得分: 0</span>
+                <span>📊 已答: 0</span>
+            </div>
+            <div class="options-grid" id="optionsGrid">
+                ${optsHtml}
+            </div>
+            <div class="nav-buttons">
+                <button class="action-btn" id="nextEntertainBtn">下一题 ➡</button>
+            </div>
+        `;
+        document.querySelectorAll(".option-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const selectedPinyin = e.target.getAttribute("data-opt");
+                if (selectedPinyin === entertainCurrentCorrectPinyin) {
+                    entertainScore++;
+                    entertainTotal++;
+                    setTimeout(() => nextEntertainQuestion(), 600);
+                } else {
+                    entertainTotal++;
+                    setTimeout(() => nextEntertainQuestion(), 1200);
+                }
+                document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+                setTimeout(() => {
+                    document.querySelectorAll(".option-btn").forEach(b => b.disabled = false);
+                }, 1000);
+            });
+        });
+        document.getElementById("nextEntertainBtn")?.addEventListener("click", () => nextEntertainQuestion());
+        extraInfoEl.innerText = "点击正确选项，答对得分";
+    }
+
+    // 模式切换
+    function setMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll(".mode-tab").forEach(tab => {
+            if (tab.getAttribute("data-mode") === mode) tab.classList.add("active");
+            else tab.classList.remove("active");
+        });
+        if (mode === "memorize") {
+            renderMemorizeMode();
+        } else if (mode === "entertain") {
+            renderEntertainMode();
+        } else if (mode === "arena") {
+            renderArenaMode();
+        }
+    }
+
+    // 绑定全局事件
+    imageZone.addEventListener("click", onImageClick);
+    document.querySelectorAll(".mode-tab").forEach(btn => {
+        btn.addEventListener("click", () => setMode(btn.getAttribute("data-mode")));
+    });
+
+    setMode("memorize");
+</script>
 </body>
-
 </html>
